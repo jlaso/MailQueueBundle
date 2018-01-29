@@ -32,21 +32,35 @@ Then register the bundle with your kernel:
     );
 
 
-Configuration
--------------
-
-    // in app/config/services.yml
-    services:        
-        jlaso_mail_queue_service:
-            class: Cueball\FrontendBundle\Service\MailQueueService
-            arguments:
-              - "@redis"
-              - "prefix you are using for your app in redis if any"
-
 Test if works
 -------------
 
     bin/console jlaso:mail:test mail@example.com 
+    
+    
+Setting up the cron
+-------------------
+
+```crontab -e``` to add more jobs to the cron list
+
+```
+* * * * * php /path/to/your/project/bin/console jlaso:mail-queue:process --env=prod >> /var/log/mail-queue.log
+```
+
+Using in a Controller
+---------------------
+
+```
+/** @var MailQueueService $mailQueueService */
+$mailQueueService = $this->get('jlaso_mail_queue_service');
+$mailQueueService->queueMail(
+    'sender@example.com',
+    'dest@example.com,
+    'This a test email',
+    'The body of the email comes here'
+);
+```
 
 
 
+Remember that the instructions above don't send actually the mail. We are just queueing the mail, the cron will process pending mails in the next round.

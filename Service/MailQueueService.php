@@ -17,10 +17,18 @@ class MailQueueService
     /**
      * MailQueueService constructor.
      */
-    public function __construct(\Redis $redis, $prefix = '')
+    public function __construct(\Redis $redis)
     {
         $this->processFolder = sys_get_temp_dir();
         $this->redis = $redis;
+        $this->prefix = '';
+    }
+
+    /**
+     * @param string $prefix
+     */
+    public function setPrefix($prefix)
+    {
         $this->prefix = $prefix;
     }
 
@@ -54,7 +62,7 @@ class MailQueueService
         $result = [];
         $mails = $this->redis->keys(self::SIGNATURE . '*');
 
-        foreach($mails as $mail) {
+        foreach ($mails as $mail) {
             $mail = preg_replace(sprintf("/^%s/", $this->prefix), "", $mail);
             $id = (preg_replace(sprintf("/^%s/", self::SIGNATURE), "", $mail));
             $result[$id] = unserialize($this->redis->get($mail));
@@ -76,7 +84,7 @@ class MailQueueService
      */
     function amIWorking()
     {
-        if (file_exists($this->processFolder.self::PROCESS_FILE_NAME)) {
+        if (file_exists($this->processFolder . self::PROCESS_FILE_NAME)) {
             $pid = intval(file_get_contents($this->processFolder . self::PROCESS_FILE_NAME));
             if (0 === $pid) {
                 return false;
@@ -94,11 +102,11 @@ class MailQueueService
 
     function startWorking()
     {
-        file_put_contents($this->processFolder.self::PROCESS_FILE_NAME, getmygid());
+        file_put_contents($this->processFolder . self::PROCESS_FILE_NAME, getmygid());
     }
 
     function finishWorking()
     {
-        file_put_contents($this->processFolder.self::PROCESS_FILE_NAME, '0');
+        file_put_contents($this->processFolder . self::PROCESS_FILE_NAME, '0');
     }
 }

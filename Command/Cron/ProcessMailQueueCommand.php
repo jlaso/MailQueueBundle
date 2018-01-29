@@ -1,10 +1,8 @@
 <?php
 
-namespace JLaso\MailQueueBundle;
+namespace JLaso\MailQueueBundle\Command\Cron;
 
 use JLaso\MailQueueBundle\Service\MailQueueService;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -12,9 +10,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
-class ProcessMailQueueCommand extends Command implements LoggerAwareInterface, ContainerAwareInterface
+class ProcessMailQueueCommand extends Command implements ContainerAwareInterface
 {
-    use LoggerAwareTrait;
     use ContainerAwareTrait;
 
     protected $dryRun = false;
@@ -25,7 +22,7 @@ class ProcessMailQueueCommand extends Command implements LoggerAwareInterface, C
     protected function configure()
     {
         $this
-            ->setName('mail-queue:process')
+            ->setName('jlaso:mail-queue:process')
             ->setDescription('process mail queue')
             ->addOption('dry-run', null, InputOption::VALUE_OPTIONAL, 'execute in dry-run mode', false);
     }
@@ -40,7 +37,7 @@ class ProcessMailQueueCommand extends Command implements LoggerAwareInterface, C
         /** @var MailQueueService $mailQueueService */
         $mailQueueService = $this->container->get('frontend_mail_queue_service');
 
-        if ($mailQueueService->amIWorking()){
+        if ($mailQueueService->amIWorking()) {
             $output->writeln('other instance is already running');
             return 0;
         }
@@ -53,7 +50,7 @@ class ProcessMailQueueCommand extends Command implements LoggerAwareInterface, C
 
             $mails = $mailQueueService->getQueuedMails();
 
-            foreach($mails as $mail => $data) {
+            foreach ($mails as $mail => $data) {
                 $message = \Swift_Message::newInstance()
                     ->setSubject($data['subject'])
                     ->setFrom($data['from'])
@@ -71,9 +68,9 @@ class ProcessMailQueueCommand extends Command implements LoggerAwareInterface, C
                     $mailQueueService->removeMail($mail);
                 }
             }
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $output->writeln($e->getMessage());
-        }finally{
+        } finally {
             $mailQueueService->finishWorking();
         }
     }

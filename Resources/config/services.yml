@@ -1,0 +1,5 @@
+services:
+    jlaso_mail_queue_service:
+        class: JLaso\MailQueueBundle\Service\MailQueueService
+        arguments:
+          - "@redis"
