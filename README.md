@@ -32,17 +32,6 @@ Then register the bundle with your kernel:
     );
 
 
-Configuration
--------------
-
-    // in app/config/services.yml
-    services:        
-        jlaso_mail_queue_service:
-            class: Cueball\FrontendBundle\Service\MailQueueService
-            arguments:
-              - "@redis"
-              - "prefix you are using for your app in redis if any"
-
 Test if works
 -------------
 
